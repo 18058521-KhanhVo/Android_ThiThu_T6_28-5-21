@@ -8,12 +8,14 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
 public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentViewHoler> {
 
+    private SendingData sendingData = (SendingData) MainActivity.context;
     private Context context;
     private LayoutInflater inflater;
     private List<Student> students;
@@ -35,6 +37,13 @@ public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentV
     public void onBindViewHolder(@NonNull StudentViewHoler holder, int position) {
         Student student = students.get(position);
         holder.txtStudentInfo.setText(student.toString());
+        holder.btnEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendingData.sendData(student.getId());
+            }
+        });
+
     }
 
     @Override
@@ -43,11 +52,13 @@ public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentV
     }
 
     public class StudentViewHoler extends RecyclerView.ViewHolder {
+        private ConstraintLayout constraintLayout;
         private TextView txtStudentInfo;
         private Button btnEdit, btnDelete;
 
         public StudentViewHoler(@NonNull View itemView) {
             super(itemView);
+            constraintLayout = itemView.findViewById(R.id.constraintlayout);
             txtStudentInfo = itemView.findViewById(R.id.txtStudentInfo);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);

@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -31,7 +32,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SendingData {
+
+    protected static Context context;
 
     private RecyclerView recyclerView;
     private TextView txtName, txtEmail, txtAge;
@@ -39,12 +42,15 @@ public class MainActivity extends AppCompatActivity {
     private Button btnSave;
 
     private List<Student> students;
+    private Student tempforput;
     private String url = "https://60afb2eee6d11e00174f4e37.mockapi.io/students";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        context = this;
 
         recyclerView = findViewById(R.id.recyclerview);
         txtName = findViewById(R.id.txtName);
@@ -123,13 +129,6 @@ public class MainActivity extends AppCompatActivity {
 
                 HashMap<String, String>
                         params = new HashMap<>();
-//                if (TextUtils.isEmpty(name)) {
-//                    Toast.makeText(MainActivity.this, "Enter name!", Toast.LENGTH_SHORT).show();
-//                } else if (TextUtils.isEmpty(email)) {
-//                    Toast.makeText(MainActivity.this, "Enter email!", Toast.LENGTH_SHORT).show();
-//                } else if (TextUtils.isEmpty(age)) {
-//                    Toast.makeText(MainActivity.this, "Enter age!", Toast.LENGTH_SHORT).show();
-//                }
                 params.put("fullname", name);
                 params.put("email", email);
                 params.put("gender", gender);
@@ -141,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         requestQueue.add(stringRequest);
+        students = null;
         getArrayJson(url);
     }
 
@@ -148,5 +148,54 @@ public class MainActivity extends AppCompatActivity {
     private void addStudent(Student student) {
         if (students == null) students = new ArrayList<>();
         students.add(student);
+    }
+
+    @Override
+    public void sendData(int id) {
+        putApi(url, id);
+    }
+
+    private void putApi(String url, int id) {
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.PUT, url + '/' + id, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Toast.makeText(MainActivity.this, "Successfully", Toast.LENGTH_SHORT).show();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(MainActivity.this, "Error by Put data!", Toast.LENGTH_SHORT).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String name = txtName.getText().toString();
+                String email = txtEmail.getText().toString();
+                String age = txtAge.getText().toString();
+                String gender;
+                if (rbtnMale.isChecked()) gender = "Male";
+                else gender = "Female";
+
+                HashMap<String, String> params = new HashMap<>();
+                if (TextUtils.isEmpty(name)) {
+                    Toast.makeText(MainActivity.this, "Enter name!", Toast.LENGTH_SHORT).show();
+                } else if (TextUtils.isEmpty(email)) {
+                    Toast.makeText(MainActivity.this, "Enter email!", Toast.LENGTH_SHORT).show();
+                } else if (TextUtils.isEmpty(age)) {
+                    Toast.makeText(MainActivity.this, "Enter age!", Toast.LENGTH_SHORT).show();
+                } else {
+                    params.put("fullname", name);
+                    params.put("email", email);
+                    params.put("gender", gender);
+                    params.put("age", age);
+                }
+                return params;
+            }
+        };
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
+        students = null;
+        getArrayJson(url);
     }
 }
